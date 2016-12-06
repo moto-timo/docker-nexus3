@@ -36,7 +36,8 @@ ENV NEXUS_VERSION=3.1.0-04 \
   NEXUS_HOME=${SONATYPE_DIR}/nexus \
   NEXUS_DATA=/nexus-data \
   NEXUS_CONTEXT='' \
-  SONATYPE_WORK=${SONATYPE_DIR}/sonatype-work
+  SONATYPE_WORK=${SONATYPE_DIR}/sonatype-work \
+  NEXUS_P2_VERSION=2.14.1-01
 
 # install Oracle JRE
 RUN mkdir -p /opt \
@@ -54,6 +55,15 @@ RUN mkdir -p ${NEXUS_HOME} \
   | gunzip \
   | tar x -C ${NEXUS_HOME} --strip-components=1 nexus-${NEXUS_VERSION} \
   && chown -R root:root ${NEXUS_HOME}
+
+# install nexus-p2-repository plugins
+RUN cd ${SONATYPE_WORK}/nexus/plugins \
+  && curl --fail --silent --location retry 3 \
+  http://search.maven.org/remotecontent?filepath=org/sonatype/nexus/plugins/nexus-p2-repository-plugin/${NEXUS_P2_VERSION}/nexus-p2-repository-plugin-${NEXUS_P2_VERSION}-bundle.zip \
+ | gunzip \
+ && curl --fail --silent --location retry 3 \
+ http://search.maven.org/remotecontent?filepath=org/sonatype/nexus/plugins/nexus-p2-bridge-plugin/${NEXUS_P2_VERSION}/nexus-p2-bridge-plugin-${NEXUS_P2_VERSION}-bundle.zip \
+ | gunzip \
 
 # configure nexus
 RUN sed \
